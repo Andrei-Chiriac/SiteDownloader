@@ -1,0 +1,9 @@
+X:\Dev\Dev\SiteDownloader\SiteDownloader\bin\Debug\SiteDownloader.exe.config
+X:\Dev\Dev\SiteDownloader\SiteDownloader\bin\Debug\SiteDownloader.exe
+X:\Dev\Dev\SiteDownloader\SiteDownloader\bin\Debug\SiteDownloader.pdb
+X:\Dev\Dev\SiteDownloader\SiteDownloader\bin\Debug\HtmlAgilityPack.dll
+X:\Dev\Dev\SiteDownloader\SiteDownloader\bin\Debug\HtmlAgilityPack.pdb
+X:\Dev\Dev\SiteDownloader\SiteDownloader\bin\Debug\HtmlAgilityPack.xml
+X:\Dev\Dev\SiteDownloader\SiteDownloader\obj\Debug\SiteDownloader.csprojResolveAssemblyReference.cache
+X:\Dev\Dev\SiteDownloader\SiteDownloader\obj\Debug\SiteDownloader.exe
+X:\Dev\Dev\SiteDownloader\SiteDownloader\obj\Debug\SiteDownloader.pdb
