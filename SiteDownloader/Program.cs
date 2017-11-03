@@ -9,14 +9,17 @@ namespace SiteDownloader
 {
     class Program
     {
-        static string _rootLink = "https://adminlte.io/themes/AdminLTE/";
-        static string _menuIdOrClass = "sidebar-menu";
-
         static void Main(string[] args)
         {
-            string domain = new Uri(_rootLink).Host;
-            IODownloadContext IOContext = new IODownloadContext(domain, new FileStream("errors.txt", FileMode.Create), Console.OpenStandardOutput());
-            new Downloader(_rootLink, _menuIdOrClass, IOContext).Download();
+            var site = new Site()
+            {
+                RootLink = "https://adminlte.io/themes/AdminLTE/",
+                MenuIdentifier = "sidebar-menu"
+            };
+            
+
+            IODownloadContext IOContext = new IODownloadContext(site.Domain, new FileStream("errors.txt", FileMode.Create), Console.OpenStandardOutput());
+            new Downloader(site, IOContext).Download();
             IOContext.Close();
 
             Console.WriteLine("\n\n\n\n");

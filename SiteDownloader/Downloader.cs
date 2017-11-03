@@ -9,47 +9,44 @@ namespace SiteDownloader
 {
     public class Downloader
     {
-        private string _siteRoot;
-        private string _menuIdOrClass;
-        private IODownloadContext _IOContext;
-        private HtmlNode _menuElement;
-        private List<HtmlNode> _elements;
-        private List<string> _pageLinks;
-        private List<WebPage> _pages = new List<WebPage>();
-        private List<string> _resourceLinks = new List<string>();
 
-        public Downloader(string siteRoot, string navElementId, IODownloadContext IOContext)
+        private IODownloadContext _IOContext;
+        public Site _site;
+
+        public Downloader(Site site, IODownloadContext IOContext)
         {
-            _siteRoot = siteRoot;
-            _menuIdOrClass = navElementId;
             _IOContext = IOContext;
+            _site = site;
         }
 
         public void Download()
         {
-            GetHtmlElementsForMainPage();
+            //menu
             FindMainMenu();
 
+            //pages
             ExtractPageLinksFromMenu();
             DownloadPages();
             SavePagesToDisk();
 
+            //resources
             ExtractResourceLinksFromPages();
             DownloadAndSaveResourcesToDisk();
-            
         }
 
-        private void GetHtmlElementsForMainPage() => _elements = WebHelper.GetHtmlNodes(_siteRoot);
-
-        private void FindMainMenu() => _menuElement = GetMenuById() ?? GetMenuByClass() ?? throw new Exception("The menu was not found");
-
-        private HtmlNode GetMenuById() => _elements.FirstOrDefault(x => x.Id == _menuIdOrClass);
-
-        private HtmlNode GetMenuByClass() => _elements.FirstOrDefault(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Contains(_menuIdOrClass));
-
+        private void FindMainMenu()
+        {
+            _site.MenuElement = WebHelper.GetHtmlNodes(_site.RootLink)
+                                         .FirstOrDefault(x => x.Id == _site.MenuIdentifier ||
+                                                        (x.Attributes.Contains("class") && 
+                                                         x.Attributes["class"].Value.Contains(_site.MenuIdentifier))) ?? 
+                                                         throw new Exception("The menu was not found");
+        }
+        
         private void ExtractPageLinksFromMenu()
         {
-            _pageLinks = _menuElement
+            _site.PageLinks = _site
+                                .MenuElement
                                 .Descendants()
                                 .Where(node => node.Name == "a")
                                 .Select(node => node.GetAttributeValue("href", string.Empty))
@@ -61,11 +58,11 @@ namespace SiteDownloader
 
         private void DownloadPages()
         {
-            Parallel.ForEach(_pageLinks.OrderBy(x => x), link =>
+            Parallel.ForEach(_site.PageLinks.OrderBy(x => x), link =>
             {
                 try
                 {
-                    _pages.Add(WebHelper.GetWebPage(_siteRoot + link));
+                    _site.WebPages.Add(WebHelper.GetWebPage(_site.RootLink + link));
                     _IOContext.WriteMessage("GOOD LINK " + link);
                 }
                 catch (Exception ex)
@@ -79,11 +76,11 @@ namespace SiteDownloader
 
         private void SavePagesToDisk()
         {
-            Parallel.ForEach(_pages, pagina =>
+            Parallel.ForEach(_site.WebPages, pagina =>
             {
                 try
                 {
-                    _IOContext.TextToFile(pagina.HTML, @"\" + pagina.Link.Replace(_siteRoot,string.Empty));
+                    _IOContext.TextToFile(pagina.HTML, @"\" + pagina.Link.Replace(_site.RootLink, string.Empty));
                 }
                 catch (Exception ex)
                 {
@@ -94,17 +91,17 @@ namespace SiteDownloader
 
         private void ExtractResourceLinksFromPages()
         {
-            Parallel.ForEach(_pages, page => _resourceLinks.AddRange(page.GetResourceLinks()));
-            _resourceLinks = _resourceLinks.Distinct().ToList();
+            Parallel.ForEach(_site.WebPages, page => _site.ResourceLinks.AddRange(page.GetResourceLinks()));
+            _site.ResourceLinks = _site.ResourceLinks.Distinct().ToList();
         }
 
         private void DownloadAndSaveResourcesToDisk()
         {
-            Parallel.ForEach(_resourceLinks.OrderBy(x => x), relativeLink =>
+            Parallel.ForEach(_site.ResourceLinks.OrderBy(x => x), relativeLink =>
             {
                 try
                 {
-                    _IOContext.StreamToFile(WebHelper.GetWebResourceAsStream(_siteRoot, relativeLink), @"\" + relativeLink.Replace("../", "").Replace("/", "\\"));
+                    _IOContext.StreamToFile(WebHelper.GetWebResourceAsStream(_site.RootLink, relativeLink), @"\" + relativeLink.Replace("../", "").Replace("/", "\\"));
                     _IOContext.WriteMessage("GOOD LINK " + relativeLink);
                 }
                 catch (Exception ex)
