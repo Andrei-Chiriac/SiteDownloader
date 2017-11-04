@@ -24,7 +24,6 @@ namespace SiteDownloader
 
             Console.WriteLine("\n\n\n\n");
             Console.ReadKey();
-
         }
     }
 }
